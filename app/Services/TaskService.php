@@ -22,7 +22,10 @@ class TaskService
     public function createTask(array $data)
     {
 
-        $task = $this->taskRepo->create($data);
+         $task = $this->taskRepository->create($data);
+
+        event(new TaskCreated($task));
+
         return $task;
     }
 
