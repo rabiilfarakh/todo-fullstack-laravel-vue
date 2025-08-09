@@ -28,10 +28,14 @@ class AuthController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ]);
 
+
+        $validated['name'] = $validated['full_name'];
+        unset($validated['full_name']);
+
         $user = $this->userService->register($validated);
 
         return response()->json(['message' => 'Utilisateur créé avec succès', 'user' => $user], 201);
-    }
+}
 
 
     public function login(Request $request)
