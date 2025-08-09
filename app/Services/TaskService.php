@@ -3,31 +3,33 @@
 
 namespace App\Services;
 
-use App\Repositories\TaskRepository;
+use App\Models\Task;
 
 class TaskService
 {
-    protected $taskRepo;
-
-    public function __construct(TaskRepository $taskRepository)
-    {
-        $this->taskRepo = $taskRepository;
-    }
-
     public function listTasks($userId)
     {
-        return $this->taskRepo->getByUserId($userId);
+        return Task::where('user_id', $userId)->get();
     }
 
     public function createTask(array $data)
     {
+        return Task::create($data);
+    }
 
-         $task = $this->taskRepository->create($data);
+    public function findTaskByIdAndUser($id, $userId)
+    {
+        return Task::where('id', $id)->where('user_id', $userId)->first();
+    }
 
-        event(new TaskCreated($task));
-
+    public function updateTask(Task $task, array $data)
+    {
+        $task->update($data);
         return $task;
     }
 
-
+    public function deleteTask(Task $task)
+    {
+        $task->delete();
+    }
 }

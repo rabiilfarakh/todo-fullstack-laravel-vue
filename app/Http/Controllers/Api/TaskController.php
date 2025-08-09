@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\TaskService;
 use Illuminate\Support\Facades\Auth;
+use App\Events\TaskCreated;
 
 class TaskController extends Controller
 {
@@ -42,6 +43,7 @@ class TaskController extends Controller
 
         $task = $this->taskService->createTask($validated);
 
+        event(new TaskCreated($task));
 
         return response()->json($task, 201);
     }

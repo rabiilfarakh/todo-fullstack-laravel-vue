@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+
 
 class AuthController extends Controller
 {
@@ -17,25 +19,35 @@ class AuthController extends Controller
     }
 
 
-    public function register(Request $request)
+   public function register(Request $request)
     {
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'phone_number' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
-            // 'image' => 'nullable|string|max:255', 
+            'image' => 'nullable|image|max:2048',  
             'password' => 'required|string|min:6|confirmed',
         ]);
 
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('profile_images', 'public');
+            $validated['image'] = $path;
+        }
 
-        $validated['name'] = $validated['full_name'];
-        unset($validated['full_name']);
+        $validated['password'] = bcrypt($validated['password']);
 
-        $user = $this->userService->register($validated);
+        $user = User::create($validated);
 
-        return response()->json(['message' => 'Utilisateur créé avec succès', 'user' => $user], 201);
-}
+        $token = auth('api')->login($user);
+
+        return response()->json([
+            'user' => $user,
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth('api')->factory()->getTTL() * 60,
+        ], 201);
+    }
 
 
     public function login(Request $request)
